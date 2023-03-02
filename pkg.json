@@ -1,0 +1,9 @@
+{
+  "targets": [
+    "node18-linux-x64"
+  ],
+  "assets": [
+    "./lib/**/*",
+    "./package.json"
+  ]
+}

@@ -1,2 +1,2 @@
 # cc-tower
-cc-tower
+Community Chains Tower
