@@ -14,6 +14,7 @@ export class ControlServer {
   static routes = {
     VERSION: '/v1/version',
     DRAIN_GENERAL_RELAY_COUNTS: '/v1/drain-general-relay-counts',
+    DRAIN_HOST_RELAY_COUNTS: '/v1/drain-host-relay-counts',
     RELOAD: '/v1/reload',
     REBUILD: '/v1/rebuild',
     RESTART: '/v1/restart',
@@ -39,6 +40,7 @@ export class ControlServer {
       'start',
       'handleVersion',
       'handleDrainGeneralRelayCounts',
+      'handleDrainHostRelayCounts',
       'handleReload',
       'handleRebuild',
       'handleRestart',
@@ -51,6 +53,7 @@ export class ControlServer {
       express()
         .get(ControlServer.routes.VERSION, this.handleVersion)
         .post(ControlServer.routes.DRAIN_GENERAL_RELAY_COUNTS, this.handleDrainGeneralRelayCounts)
+        .post(ControlServer.routes.DRAIN_HOST_RELAY_COUNTS, this.handleDrainHostRelayCounts)
         .post(ControlServer.routes.RELOAD, this.handleReload)
         .post(ControlServer.routes.REBUILD, this.handleRebuild)
         .post(ControlServer.routes.RESTART, this.handleRestart)
@@ -115,6 +118,38 @@ export class ControlServer {
         }
         res.type('application/json');
         res.send(JSON.stringify(combinedGeneralRelayCounts));
+      }
+    } catch(err: any) {
+      this._logger.gatewayError(err.message + '\n' + err.stack);
+      res.sendStatus(500);
+    }
+  }
+
+  async handleDrainHostRelayCounts(req: express.Request, res: express.Response): Promise<void> {
+    try {
+      const serverIdx = this._serverIdx;
+      const servers = this._serverController.getServers();
+      if(serverIdx > -1) { // It is an HTTP server instance
+        const hostRelayCounts = this._serverController.drainHostRelayCounts();
+        res.type('application/json');
+        res.send(JSON.stringify(hostRelayCounts));
+      } else { // It is a TCP server instance
+        const hostRelayCounts: {[host: string]: number[]} = {};
+        for(const server of servers) {
+          try {
+            const { body } = await request
+              .post(`http://localhost:${server.controlPort}${ControlServer.routes.DRAIN_HOST_RELAY_COUNTS}`)
+              .accept('application/json')
+              .timeout(10000);
+            for(const [host, times] of Object.entries(body as {[host: string]: number[]})) {
+              hostRelayCounts[host] = (hostRelayCounts[host] || []).concat(times);
+            }
+          } catch(err: any) {
+            this._logger.gatewayError(`Drain host relay counts error: ` + err.message + '\n' + err.stack);
+          }
+        }
+        res.type('application/json');
+        res.send(JSON.stringify(hostRelayCounts));
       }
     } catch(err: any) {
       this._logger.gatewayError(err.message + '\n' + err.stack);

@@ -7,6 +7,7 @@ import { Logger } from './logger';
 import { ChildProcess, spawn } from 'child_process';
 import { LocalConfig } from './local-config';
 import { ApiClient } from './api-client';
+import dayjs from 'dayjs';
 
 export interface ServerData {
   name: string
@@ -120,6 +121,7 @@ export class ServerController {
   }
 
   _generalRelayCounts: GeneralRelayCounts = {start: 0, end: 0, relays: {}};
+  _hostRelayCounts: {[host: string]: number[]} = {};
 
   async startHttpServer(idxStr: string) {
     const idx = Number(idxStr);
@@ -171,15 +173,25 @@ export class ServerController {
           const chainId = host.split('.')[1];
           if(!chainId)
             continue;
-          const now = Date.now();
+          const now = dayjs().utc().valueOf();
           if(!this._generalRelayCounts.start)
             this._generalRelayCounts.start = now;
           this._generalRelayCounts.end = now;
+
+          // Gateway stats
           if(this._generalRelayCounts.relays[chainId]) {
             this._generalRelayCounts.relays[chainId]++;
           } else {
             this._generalRelayCounts.relays[chainId] = 1;
           }
+
+          // Host stats
+          if(this._hostRelayCounts[host]) {
+            this._hostRelayCounts[host].push(now);
+          } else {
+            this._hostRelayCounts[host] = [now];
+          }
+
           // if(status !== '200')
           //   continue;
           // if(this.counts[host]) {
@@ -397,6 +409,12 @@ export class ServerController {
       relays: {},
     };
     return generalRelayCounts;
+  }
+
+  drainHostRelayCounts(): {[host: string]: number[]} {
+    const hostRelayCounts = this._hostRelayCounts;
+    this._hostRelayCounts = {};
+    return hostRelayCounts;
   }
 
 }

@@ -11,6 +11,10 @@ import { LocalConfig } from './modules/local-config';
 import prompts from 'prompts';
 import colors from 'colors/safe';
 import { DOCKER_NETWORK } from './constants';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const { version } = fs.readJsonSync(path.resolve(__dirname, '../package.json'));
 
