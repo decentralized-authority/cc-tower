@@ -196,10 +196,11 @@ const prestart = async function() {
       await logger.initialize();
 
       logger.gatewayInfo(`Starting Community Chains Gateway v${version}`);
-      logger.gatewayInfo('Pulling provider information');
-      const provider = await apiClient.getProvider();
-      logger.gatewayInfo('Pulling gateway information');
-      const gateway = await apiClient.getGateway();
+      logger.gatewayInfo('Pulling provider & gateway info');
+      const [ provider, gateway ] = await Promise.all([
+        apiClient.getProvider(),
+        apiClient.getGateway(),
+      ]);
 
       const docker = new Docker();
       await docker.createNetwork(DOCKER_NETWORK);
