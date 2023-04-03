@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash/cloneDeep';
-import { Gateway, NodeChain } from '../interfaces';
+import { Gateway, ChainHost } from '../interfaces';
 import { HAP, RouteObj } from './hap';
 import { Docker } from './docker';
 import { httpLogPatt, timeout } from '../util';
@@ -109,15 +109,19 @@ export class ServerController {
 
   async generateRoutes(): Promise<RouteObj[]> {
     const { httpPort } = this._gateway;
-    const nodes = await this._apiClient.getNodes();
-    const nodeChains = nodes
-      .reduce<NodeChain[]>((arr, node) => {
-        return arr.concat(node.chains);
-      }, []);
-    return nodeChains.map((chain) => ({
-      host: `${chain.url}${[80, 443].includes(httpPort) ? '' : `:${httpPort}`}`,
-      backend: chain.id,
-    }));
+    const gatewayHosts = await this._apiClient.getHosts();
+    return gatewayHosts
+      .map(({ id, hosts }) => {
+        return hosts.map((host) => {
+          return {
+            host: `${host}${[80, 443].includes(httpPort) ? '' : `:${httpPort}`}`,
+            backend: id,
+          }
+        })
+      })
+      .reduce((arr, hosts) => {
+        return arr.concat(hosts);
+      });
   }
 
   _generalRelayCounts: GeneralRelayCounts = {start: 0, end: 0, relays: {}};

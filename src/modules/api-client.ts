@@ -1,4 +1,4 @@
-import { Gateway, GatewayNode, Provider, RpcEndpoint, SessionToken } from '../interfaces';
+import { Gateway, GatewayHosts, Provider, RpcEndpoint, SessionToken } from '../interfaces';
 import request from 'superagent';
 import isString from 'lodash/isString';
 import dayjs from 'dayjs';
@@ -87,10 +87,10 @@ export class ApiClient {
     return body;
   }
 
-  async getNodes(): Promise<GatewayNode[]> {
+  async getHosts(): Promise<GatewayHosts[]> {
     const token = await this.checkToken();
     const { body } = await this._makeRequest(() => request
-      .get(`${this._endpoint}/v1/providers/${this._providerId}/gateways/${this._gatewayId}/nodes`)
+      .get(`${this._endpoint}/v1/providers/${this._providerId}/gateways/${this._gatewayId}/hosts`)
       .set({'x-api-key': token})
       .type('application/json')
       .timeout(this._timeout));

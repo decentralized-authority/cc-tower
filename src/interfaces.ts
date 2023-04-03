@@ -1,11 +1,11 @@
-export interface NodeChain {
+export interface ChainHost {
   id: string
-  url: string
+  host: string
 }
 
-export interface GatewayNode {
+export interface GatewayHosts {
   id: string
-  chains: NodeChain[]
+  hosts: string[]
 }
 
 export interface RpcEndpoint {
@@ -53,4 +53,6 @@ export interface Gateway {
   serverStartingApiPort: number
   serverStartingStatsPort: number
   serverStartingControlPort: number
+  relayPort: number
+  discordWebhookUrl: string
 }
