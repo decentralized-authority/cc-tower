@@ -121,7 +121,7 @@ export class ServerController {
       })
       .reduce((arr, hosts) => {
         return arr.concat(hosts);
-      });
+      }, []);
   }
 
   _generalRelayCounts: GeneralRelayCounts = {start: 0, end: 0, relays: {}};
