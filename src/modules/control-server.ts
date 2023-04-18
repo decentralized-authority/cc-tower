@@ -195,6 +195,7 @@ export class ControlServer {
             .timeout(60000);
         }
       }
+      res.sendStatus(200);
     } catch(err: any) {
       this._logger.gatewayError(err.message + '\n' + err.stack);
       res.sendStatus(500);
