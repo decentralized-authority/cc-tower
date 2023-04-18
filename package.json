@@ -1,6 +1,6 @@
 {
   "name": "cc-tower",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "cc-tower",
   "private": true,
   "main": "./lib/index.js",
