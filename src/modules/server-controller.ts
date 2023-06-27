@@ -138,10 +138,11 @@ export class ServerController {
     const routes = await this.generateRoutes();
     const backends = rpcEndpoints
       .map((rpcEndpoint) => {
+        const [ host, path ] = this.splitHostPath(rpcEndpoint.address);
         return {
           name: rpcEndpoint.chainId,
           servers: [
-            {name: `${rpcEndpoint.chainId}-0`, host: rpcEndpoint.address, port: rpcEndpoint.port}
+            {name: `${rpcEndpoint.chainId}-0`, host, port: rpcEndpoint.port, path}
           ]
         }
       });
@@ -244,6 +245,12 @@ export class ServerController {
     this._hap = hap;
   }
 
+  splitHostPath(hostPath: string): [string, string] {
+    const [ host, ...pathArr ] = hostPath.split('/');
+    const path = pathArr.join('/');
+    return [host, path ? `/${path}` : ''];
+  }
+
   async startTcpServer() {
     const logger = this._logger;
     // const { hostIp } = this._config;
@@ -277,6 +284,7 @@ export class ServerController {
               name: server.name,
               host: this.generateHttpServerHostName(i),
               port: server.httpPort,
+              path: '',
             };
           }),
         },

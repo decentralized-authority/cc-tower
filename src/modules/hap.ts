@@ -10,9 +10,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import { DOCKER_NETWORK, DOCKER_HOST } from '../constants';
 
 export interface BackendServer {
-  name: string,
-  host: string,
+  name: string
+  host: string
   port: number
+  path: string
 }
 export interface RouteObj {
   host: string
@@ -195,7 +196,7 @@ export class HAP extends EventEmitter {
               // '  filter compression',
               // '  compression algo gzip',
               '  balance leastconn',
-              ...servers.map(s => `  server ${s.name} ${s.host}:${s.port} resolve-opts allow-dup-ip resolve-prefer ipv4 check`),
+              ...servers.map(s => `  server ${s.name} ${s.host}:${s.port}${s.path} resolve-opts allow-dup-ip resolve-prefer ipv4 check`),
             ];
             return lines.join('\n');
           })
@@ -215,7 +216,7 @@ export class HAP extends EventEmitter {
               // '  option httpchk',
               // '  http-check send meth GET uri /health',
               // '  http-check expect status 200',
-              ...servers.map((s, i) => `  server ${s.name} ${s.host}:${s.port} resolvers docker check${/443/.test(s.port.toString()) ? ' check-ssl verify none' : ''}${servers.length > 1 && i === servers.length - 1 ? ' backup' : ''}`),
+              ...servers.map((s, i) => `  server ${s.name} ${s.host}:${s.port}${s.path} resolvers docker check${/443/.test(s.port.toString()) ? ' check-ssl verify none' : ''}${servers.length > 1 && i === servers.length - 1 ? ' backup' : ''}`),
             ];
             return lines.join('\n');
           })
